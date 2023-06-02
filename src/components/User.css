@@ -1,5 +1,5 @@
 .container {
-  padding: 5px 10px;
+  padding: 3px 10px;
 }
 
 table {
@@ -17,5 +17,25 @@ table tr {
 
 table tr th,
 table tr td {
-  padding: 5px;
+  padding: 3px;
+}
+
+li {
+  list-style-type: none;
+}
+
+.pagination {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.page-item {
+  padding: 10px;
+
+  border: 1px solid black;
+}
+
+.active {
+  color: rgb(218, 56, 16);
+  font-size: 24px;
 }

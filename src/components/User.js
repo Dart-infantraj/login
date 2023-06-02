@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import './User.css';
 import axios from 'axios';
-import { API_KEY_ADD_EMPLOYEE, API_KEY_ALL_EMPLOYEE } from '../Url';
+import {
+  API_KEY_ADD_EMPLOYEE,
+  API_KEY_ALL_EMPLOYEE,
+  API_KEY_DELETE_EMPLOYEE,
+  API_KEY_GETONE_EMPLOYEE,
+  API_KEY_UPDATE,
+} from '../Url';
 
 export default function User() {
   const [data, setData] = useState([]);
-  // const [editId, setEditId] = useState();
+  const [editId, setEditId] = useState(null);
   const [name, setName] = useState();
   const [email, setEmail] = useState();
   const [mobile, setMobile] = useState();
@@ -15,8 +21,15 @@ export default function User() {
   const [esi, setEsi] = useState();
   const [photo, setPhoto] = useState();
   const [leaving, setLeaving] = useState();
-  // const [updateName, setUpdateName] = useState();
-  // const [updateEmail, setupdateEmail] = useState();
+  const [updateName, setUpdateName] = useState();
+  const [updateEmail, setUpdateEmail] = useState();
+  const [updateMobile, setUpdateMobile] = useState();
+  const [updateDesignation, setupdateDesignation] = useState();
+  const [updateJoining, setUpdateJoining] = useState();
+  const [updateEpf, setUpdateEpf] = useState();
+  const [updateEsi, setUpdateEsi] = useState();
+  const [updatePhoto, setUpdatePhoto] = useState();
+  const [updateLeaving, setUpdateLeaving] = useState();
 
   const token = localStorage.getItem('token');
   console.log(token);
@@ -29,7 +42,7 @@ export default function User() {
       })
       .then((res) => {
         alert('get data');
-        console.log(res);
+        console.log(res.data);
         setData(res.data.data);
       })
 
@@ -61,46 +74,111 @@ export default function User() {
       .then((res) => {
         alert('create employee');
         console.log(res.data);
+        window.location.reload();
       })
       .catch((err) => console.log(err));
   };
 
   // //put
-  // const changeEdit = (id) => {
-  //   axios
-  //     .get(url + id)
-  //     .then((res) => {
-  //       console.log(res);
-  //       setUpdateName(res.data.name);
+  const changeEdit = (id) => {
+    axios
+      .get(
+        API_KEY_GETONE_EMPLOYEE + id,
 
-  //       setupdateEmail(res.data.email);
-  //     })
-  //     .catch((err) => {
-  //       setEditId(id);
-  //     });
-  // };
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      .then((res) => {
+        console.log(res.data.name);
+        setUpdateName(res.data.name);
+        setUpdateEmail(res.data.email);
+        setUpdateMobile(res.data.mobile);
+        setupdateDesignation(res.data.designation);
+        setUpdateJoining(res.data.date_of_joining);
+        setUpdateEpf(res.data.epf_uan);
+        setUpdateEsi(res.data.esi_number);
+        setUpdatePhoto(res.data.profile_photo);
+        setUpdateLeaving(res.data.date_of_relieving);
 
-  // const payload = {
-  //   id: editId,
-  //   name: updateName,
-  //   email: updateEmail,
-  // };
+        alert('edit');
+        //setEditId(editId);
+      })
+      .catch((err) => console.log(err));
+    setEditId(id);
+  };
 
-  // const options = JSON.stringify(payload);
   //update
-  // const changeUpdate = (editId) => {
-  //   axios
-  //     .put(${url ${editId}, payload, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     })
-  //     .then((res) => {
-  //       console.log(res);
-  //       alert('update');
-  //       setEditId(-1);
-  //     })
-  //     .catch((err) => console.log(err));
-  // };
 
+  const changeUpdate = () => {
+    axios
+      .put(
+        API_KEY_UPDATE + editId,
+        {
+          name: updateName,
+          email: updateEmail,
+          mobile: updateMobile,
+          designation: updateDesignation,
+          date_of_joining: `${updateJoining}`,
+          epf_uan: updateEpf,
+          esi_number: updateEsi,
+          profile_photo: updatePhoto,
+          date_of_relieving: `${updateLeaving}`,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+      .then((res) => {
+        console.log(res.data.data);
+        alert('update');
+        window.location.reload();
+      })
+      .catch((err) => console.log(err));
+  };
+
+  //delete
+
+  const deleteItem = (id) => {
+    console.log('delete');
+    axios
+      .delete(
+        API_KEY_DELETE_EMPLOYEE + id,
+
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+      .then((res) => {
+        alert('deleted');
+        console.log(res.data);
+        window.location.reload();
+      })
+      .catch((err) => console.log(err));
+  };
+
+  //paginations
+
+  const [currentPage, setCurrentpage] = useState(1);
+  const pagePer = 5;
+  const lastIndex = currentPage * pagePer;
+  const firstIndex = lastIndex - pagePer;
+  const record = data.slice(firstIndex, lastIndex);
+  const nPages = Math.ceil(data.length / pagePer);
+  const number = [...Array(nPages + 1).keys()].slice(1);
+
+  const prevpage = () => {
+    if (currentPage !== 1) {
+      setCurrentpage(currentPage - 1);
+    }
+  };
+  const changePage = (id) => {
+    setCurrentpage(id);
+  };
+
+  const nxtpage = () => {
+    if (currentPage !== nPages) {
+      setCurrentpage(currentPage + 1);
+    }
+  };
   return (
     <div>
       <form onSubmit={handleSubmit}>
@@ -136,41 +214,119 @@ export default function User() {
         </thead>
 
         <tbody>
-          {data.map((item, index) => (
-            // item.id === editId ? (
-            //   <tr key={index}>
-            //     <td>{item.id}</td>
-            //     <td>
-            //       {' '}
-            //       <input type='text' name='name' onChange={(e) => setUpdateName(e.target.value)} />
-            //     </td>
-            //     <td>
-            //       <input type='text' name='email' onChange={(e) => setupdateEmail(e.target.value)} />
-            //     </td>
-            //     <td>
-            //       <button onClick={changeUpdate}>Update</button>
-            //     </td>
-            //   </tr>
-            // ) :
-            <tr key={item.index}>
-              <td>{item.id}</td>
-              <td>{item.name}</td>
-              <td>{item.email}</td>
-              <td>{item.mobile}</td>
-              <td>{item.designation}</td>
-              <td>{item.date_of_joining}</td>
-              <td>{item.epf_uan}</td>
-              <td>{item.esi_number}</td>
-              <td>{item.profile_photo}</td>
-              <td>{item.date_of_relieving}</td>
-              <td>
-                <button>Edit</button>
-                <button>Delete</button>
-              </td>
-            </tr>
-          ))}
+          {record.map((item, index) =>
+            item.id === editId ? (
+              <tr key={index}>
+                <td>{item.id}</td>
+                <td>
+                  {' '}
+                  <input type='text' name='name' value={updateName} onChange={(e) => setUpdateName(e.target.value)} />
+                </td>
+                <td>
+                  {' '}
+                  <input
+                    type='text'
+                    name='email'
+                    value={updateEmail}
+                    onChange={(e) => setUpdateEmail(e.target.value)}
+                  />
+                </td>
+                <td>
+                  {' '}
+                  <input
+                    type='number'
+                    name='mobile'
+                    value={updateMobile}
+                    onChange={(e) => setUpdateMobile(e.target.value)}
+                  />
+                </td>
+                <td>
+                  {' '}
+                  <input
+                    type='text'
+                    name='designation'
+                    value={updateDesignation}
+                    onChange={(e) => setupdateDesignation(e.target.value)}
+                  />
+                </td>
+
+                <td>
+                  {' '}
+                  <input name='joining' value={updateJoining} onChange={(e) => setUpdateJoining(e.target.value)} />
+                </td>
+
+                <td>
+                  {' '}
+                  <input type='number' name='epf' value={updateEpf} onChange={(e) => setUpdateEpf(e.target.value)} />
+                </td>
+
+                <td>
+                  {' '}
+                  <input type='number' name='mobile' value={updateEsi} onChange={(e) => setUpdateEsi(e.target.value)} />
+                </td>
+
+                <td>
+                  {' '}
+                  <input
+                    type='text'
+                    name='photo'
+                    value={updatePhoto}
+                    onChange={(e) => setUpdatePhoto(e.target.value)}
+                  />
+                </td>
+                <td>
+                  {' '}
+                  <input name='mobile' value={updateLeaving} onChange={(e) => setUpdateLeaving(e.target.value)} />
+                </td>
+
+                <button onClick={changeUpdate}>Update</button>
+              </tr>
+            ) : (
+              <tr key={item.index}>
+                <td>{item.id}</td>
+                <td>{item.name}</td>
+                <td>{item.email}</td>
+                <td>{item.mobile}</td>
+                <td>{item.designation}</td>
+                <td>{item.date_of_joining}</td>
+                <td>{item.epf_uan}</td>
+                <td>{item.esi_number}</td>
+                <td>{item.profile_photo}</td>
+                <td>{item.date_of_relieving}</td>
+
+                <td>
+                  <button onClick={() => changeEdit(item.id)}>Edit</button>
+
+                  <button onClick={() => deleteItem(item.id)}>Delete</button>
+                </td>
+              </tr>
+            )
+          )}
         </tbody>
       </table>
+      <nav>
+        <ul className='pagination'>
+          <li className='page-item'>
+            <a href='#' className='page-link' onClick={prevpage}>
+              Prev
+            </a>
+          </li>
+
+          {number.map((n, i) => (
+            <li className={`page-item ${currentPage === n ? `active` : ''}`} key={i}>
+              <a href='#' className='page-link' onClick={() => changePage(n)}>
+                {n}
+              </a>
+            </li>
+          ))}
+
+          <li className='page-item'>
+            <a href='#' className='page-link' onClick={nxtpage}>
+              Next
+            </a>
+          </li>
+        </ul>
+      </nav>
     </div>
   );
 }
